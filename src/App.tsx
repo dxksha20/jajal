@@ -6,13 +6,8 @@ import { Dashboard } from './components/Dashboard';
 import { CaseList } from './components/CaseList';
 import { CaseForm } from './components/CaseForm';
 import { CaseDetails } from './components/CaseDetails';
-import { ApiExplorer } from './components/ApiExplorer';
-import { TestRunner } from './components/TestRunner';
-import { DocumentationView } from './components/DocumentationView';
-import { GitHubGuide } from './components/GitHubGuide';
 import { LoginPage } from './components/LoginPage';
-import { SystemCheckModal } from './components/SystemCheckModal';
-import { ShieldAlert, CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, ShieldAlert } from 'lucide-react';
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(DEMO_USERS[0]); // default to Admin
@@ -22,28 +17,27 @@ export default function App() {
   const [editingCase, setEditingCase] = useState<MedicalCase | null>(null);
   const [initialStatusFilter, setInitialStatusFilter] = useState<string>('');
   const [showLoginModal, setShowLoginModal] = useState<boolean>(false);
-  const [showSystemCheckModal, setShowSystemCheckModal] = useState<boolean>(false);
   const [flashMessage, setFlashMessage] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   const showFlash = (type: 'success' | 'error', message: string) => {
     setFlashMessage({ type, message });
-    setTimeout(() => setFlashMessage(null), 4000);
+    setTimeout(() => setFlashMessage(null), 3500);
   };
 
-  // Switch between Admin and Viewer roles
+  // Toggle between Admin and Viewer roles to test permissions
   const handleToggleRole = () => {
     if (!currentUser) {
       setCurrentUser(DEMO_USERS[0]);
-      showFlash('success', 'Logged in as Dr. Eleanor Vance (Admin)');
+      showFlash('success', 'Logged in as Admin (Dr. Eleanor Vance)');
       return;
     }
 
     if (currentUser.role === 'admin') {
       setCurrentUser(DEMO_USERS[1]); // Viewer
-      showFlash('success', 'Switched to Mark Reynolds (Viewer - Read-only policy active)');
+      showFlash('success', 'Switched to Viewer (Mark Reynolds - Read-only access)');
     } else {
       setCurrentUser(DEMO_USERS[0]); // Admin
-      showFlash('success', 'Switched to Dr. Eleanor Vance (Admin - Full CRUD policy active)');
+      showFlash('success', 'Switched to Admin (Dr. Eleanor Vance - Full CRUD access)');
     }
   };
 
@@ -54,7 +48,7 @@ export default function App() {
 
   const handleEditCase = (caseItem: MedicalCase) => {
     if (currentUser?.role !== 'admin') {
-      showFlash('error', '403 Forbidden: Viewers are unauthorized to edit cases.');
+      showFlash('error', '403 Forbidden: Viewers are not authorized to edit cases.');
       return;
     }
     setEditingCase(caseItem);
@@ -75,7 +69,7 @@ export default function App() {
     const now = new Date().toISOString().replace('T', ' ').substring(0, 19);
 
     if (editingCase) {
-      // Update case
+      // Update existing case
       setCases((prev) =>
         prev.map((c) =>
           c.id === editingCase.id
@@ -133,7 +127,7 @@ export default function App() {
 
   const handleUpdateStatus = (caseId: number, newStatus: CaseStatus) => {
     if (currentUser?.role !== 'admin') {
-      showFlash('error', '403 Forbidden: Only Admins can change case status.');
+      showFlash('error', '403 Forbidden: Only Admin users can change case status.');
       return;
     }
 
@@ -161,8 +155,17 @@ export default function App() {
 
   const handleLogout = () => {
     setCurrentUser(null);
-    showFlash('success', 'Logged out successfully. You are now browsing as Guest.');
+    showFlash('success', 'Logged out successfully.');
   };
+
+  // If user is logged out, show the Login page directly
+  if (!currentUser && !showLoginModal) {
+    return (
+      <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
+        <LoginPage onLoginSuccess={handleLoginSuccess} />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
@@ -172,7 +175,7 @@ export default function App() {
         activeTab={activeTab}
         setActiveTab={(tab) => {
           if (tab === 'create-case' && currentUser?.role !== 'admin') {
-            showFlash('error', '403 Forbidden: Only Admins can create cases. Switched to Cases tab.');
+            showFlash('error', '403 Forbidden: Only Admins can create cases.');
             setActiveTab('cases');
             return;
           }
@@ -181,10 +184,9 @@ export default function App() {
         onOpenLogin={() => setShowLoginModal(true)}
         onLogout={handleLogout}
         onToggleRole={handleToggleRole}
-        onOpenSystemCheck={() => setShowSystemCheckModal(true)}
       />
 
-      {/* Flash Messages */}
+      {/* Flash Alerts */}
       {flashMessage && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 w-full">
           <div
@@ -204,8 +206,9 @@ export default function App() {
         </div>
       )}
 
-      {/* Main Content Viewport */}
+      {/* Main Content Area - Strictly Jajal Medical Tasks */}
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
+        {/* 1. Dashboard (Counts: Total, Planning, In Review, Approved, Completed) */}
         {activeTab === 'dashboard' && (
           <Dashboard
             cases={cases}
@@ -216,6 +219,7 @@ export default function App() {
           />
         )}
 
+        {/* 2. Medical Case List (10 per page, search, filter, conditional actions) */}
         {activeTab === 'cases' && (
           <CaseList
             cases={cases}
@@ -228,6 +232,7 @@ export default function App() {
           />
         )}
 
+        {/* 3. Create Case Form (Admin only) */}
         {activeTab === 'create-case' && (
           <CaseForm
             existingCases={cases}
@@ -237,6 +242,7 @@ export default function App() {
           />
         )}
 
+        {/* 4. Edit Case Form (Admin only) */}
         {activeTab === 'case-edit' && (
           <CaseForm
             initialCase={editingCase}
@@ -250,6 +256,7 @@ export default function App() {
           />
         )}
 
+        {/* 5. Case Details Page */}
         {activeTab === 'case-details' && selectedCase && (
           <CaseDetails
             caseItem={selectedCase}
@@ -259,23 +266,7 @@ export default function App() {
             onUpdateStatus={handleUpdateStatus}
           />
         )}
-
-        {activeTab === 'api-explorer' && (
-          <ApiExplorer cases={cases} currentUser={currentUser} />
-        )}
-
-        {activeTab === 'test-runner' && <TestRunner />}
-
-        {activeTab === 'docs' && <DocumentationView />}
-
-        {activeTab === 'github' && <GitHubGuide />}
       </main>
-
-      {/* System Check Modal */}
-      <SystemCheckModal
-        isOpen={showSystemCheckModal}
-        onClose={() => setShowSystemCheckModal(false)}
-      />
 
       {/* Login Modal */}
       {showLoginModal && (
@@ -289,20 +280,18 @@ export default function App() {
         </div>
       )}
 
-      {/* Footer */}
-      <footer className="bg-white border-t border-slate-200 mt-12 py-6 text-xs text-slate-700 text-center">
+      {/* Clean Medical Footer */}
+      <footer className="bg-white border-t border-slate-200 mt-12 py-6 text-xs text-slate-500 text-center">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p>
-            &copy; {new Date().getFullYear()} Jajal Medical Case Management System &bull; Software Developer Intern Project
+            &copy; {new Date().getFullYear()} Jajal Medical Case Management System
           </p>
-          <div className="flex items-center gap-4 text-slate-700">
+          <div className="flex items-center gap-2 text-slate-400">
+            <span>Admin &amp; Viewer Access Control</span>
+            <span>&bull;</span>
             <span>Laravel 12</span>
             <span>&bull;</span>
             <span>MySQL</span>
-            <span>&bull;</span>
-            <span>Blade</span>
-            <span>&bull;</span>
-            <span>Sanctum API</span>
           </div>
         </div>
       </footer>
