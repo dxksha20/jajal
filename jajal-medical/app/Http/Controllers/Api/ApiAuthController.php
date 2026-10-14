@@ -38,15 +38,17 @@ class ApiAuthController extends Controller
         $token = $user->createToken('api_token')->plainTextToken;
 
         return response()->json([
-            'status' => 'success',
+            'success' => true,
             'message' => 'Authentication successful.',
-            'token_type' => 'Bearer',
-            'access_token' => $token,
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'role' => $user->role,
+            'data' => [
+                'token_type' => 'Bearer',
+                'access_token' => $token,
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'role' => $user->role,
+                ],
             ],
         ], 200);
     }
@@ -62,8 +64,9 @@ class ApiAuthController extends Controller
         $request->user()->currentAccessToken()->delete();
 
         return response()->json([
-            'status' => 'success',
+            'success' => true,
             'message' => 'Tokens successfully revoked. User logged out.',
+            'data' => null,
         ], 200);
     }
 }

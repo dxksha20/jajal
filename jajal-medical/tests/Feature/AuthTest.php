@@ -39,10 +39,13 @@ class AuthTest extends TestCase
 
         $apiResponse->assertStatus(200)
             ->assertJsonStructure([
-                'status',
-                'access_token',
-                'token_type',
-                'user' => ['id', 'name', 'email', 'role'],
+                'success',
+                'message',
+                'data' => [
+                    'access_token',
+                    'token_type',
+                    'user' => ['id', 'name', 'email', 'role'],
+                ],
             ]);
     }
 

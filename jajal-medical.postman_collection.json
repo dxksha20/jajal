@@ -1,0 +1,162 @@
+{
+  "info": {
+    "_postman_id": "c1f72b9a-4e2a-4318-8f55-7d88c2f8832a",
+    "name": "Jajal Medical Case Management API",
+    "description": "Postman Collection for Jajal Medical Case Management System RESTful API with Laravel Sanctum token authentication.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://jajal.test/api",
+      "type": "string"
+    },
+    {
+      "key": "sanctum_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Authentication",
+      "item": [
+        {
+          "name": "POST Login (Admin or Viewer)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@jajal.med\",\n  \"password\": \"password\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["login"]
+            },
+            "description": "Authenticates user and returns Sanctum Bearer token."
+          }
+        },
+        {
+          "name": "POST Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{sanctum_token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["logout"]
+            },
+            "description": "Revokes current Sanctum bearer token."
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Medical Cases CRUD",
+      "item": [
+        {
+          "name": "GET List Cases (Paginated)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{sanctum_token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/cases?search=&status=",
+              "host": ["{{baseUrl}}"],
+              "path": ["cases"],
+              "query": [
+                { "key": "search", "value": "" },
+                { "key": "status", "value": "" }
+              ]
+            },
+            "description": "Returns 10 cases per page with search and status filter."
+          }
+        },
+        {
+          "name": "POST Create Case (Admin Only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{sanctum_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"case_number\": \"CAS-2026-900\",\n  \"patient_ref_code\": \"PAT-7120\",\n  \"surgeon_name\": \"Dr. Michael Chang\",\n  \"implant_type\": \"Titanium Trabecular Hip Stem\",\n  \"status\": \"Planning\",\n  \"priority\": \"High\",\n  \"surgery_date\": \"2026-06-15\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/cases",
+              "host": ["{{baseUrl}}"],
+              "path": ["cases"]
+            },
+            "description": "Creates medical case. Requires Admin role; returns 403 if Viewer."
+          }
+        },
+        {
+          "name": "GET Single Case",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{sanctum_token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/cases/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["cases", "1"]
+            },
+            "description": "Fetches detailed case record by ID."
+          }
+        },
+        {
+          "name": "PUT Update Case (Admin Only)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{sanctum_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"case_number\": \"CAS-2026-001\",\n  \"patient_ref_code\": \"PAT-8392\",\n  \"surgeon_name\": \"Dr. Michael Chang\",\n  \"implant_type\": \"Titanium Hip Stem (Revision Cup)\",\n  \"status\": \"Approved\",\n  \"priority\": \"High\",\n  \"surgery_date\": \"2026-04-10\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/cases/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["cases", "1"]
+            },
+            "description": "Updates existing medical case. Admin only."
+          }
+        },
+        {
+          "name": "DELETE Case (Admin Only)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{sanctum_token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/cases/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["cases", "1"]
+            },
+            "description": "Permanently deletes case record. Blocked (403) for Viewer."
+          }
+        }
+      ]
+    }
+  ]
+}

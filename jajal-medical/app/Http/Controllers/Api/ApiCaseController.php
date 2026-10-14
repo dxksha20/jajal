@@ -37,14 +37,15 @@ class ApiCaseController extends Controller
         $cases = $query->paginate(10);
 
         return response()->json([
-            'status' => 'success',
-            'meta' => [
+            'success' => true,
+            'message' => 'Medical cases retrieved successfully.',
+            'data' => [
                 'current_page' => $cases->currentPage(),
                 'per_page' => $cases->perPage(),
                 'total' => $cases->total(),
                 'last_page' => $cases->lastPage(),
+                'cases' => $cases->items(),
             ],
-            'data' => $cases->items(),
         ], 200);
     }
 
@@ -59,7 +60,7 @@ class ApiCaseController extends Controller
         $response = Gate::inspect('create', MedicalCase::class);
         if ($response->denied()) {
             return response()->json([
-                'status' => 'error',
+                'success' => false,
                 'message' => 'This action is unauthorized.',
                 'error' => $response->message(),
             ], 403);
@@ -71,7 +72,7 @@ class ApiCaseController extends Controller
         $case = MedicalCase::create($validated);
 
         return response()->json([
-            'status' => 'success',
+            'success' => true,
             'message' => 'Medical case created successfully.',
             'data' => $case,
         ], 201);
@@ -88,13 +89,15 @@ class ApiCaseController extends Controller
 
         if (! $case) {
             return response()->json([
-                'status' => 'error',
+                'success' => false,
                 'message' => "Medical case with ID #{$id} not found.",
+                'data' => null,
             ], 404);
         }
 
         return response()->json([
-            'status' => 'success',
+            'success' => true,
+            'message' => 'Medical case details retrieved successfully.',
             'data' => $case,
         ], 200);
     }
@@ -110,15 +113,16 @@ class ApiCaseController extends Controller
 
         if (! $case) {
             return response()->json([
-                'status' => 'error',
+                'success' => false,
                 'message' => "Medical case with ID #{$id} not found.",
+                'data' => null,
             ], 404);
         }
 
         $response = Gate::inspect('update', $case);
         if ($response->denied()) {
             return response()->json([
-                'status' => 'error',
+                'success' => false,
                 'message' => 'This action is unauthorized.',
                 'error' => $response->message(),
             ], 403);
@@ -127,7 +131,7 @@ class ApiCaseController extends Controller
         $case->update($request->validated());
 
         return response()->json([
-            'status' => 'success',
+            'success' => true,
             'message' => 'Medical case updated successfully.',
             'data' => $case,
         ], 200);
@@ -144,15 +148,16 @@ class ApiCaseController extends Controller
 
         if (! $case) {
             return response()->json([
-                'status' => 'error',
+                'success' => false,
                 'message' => "Medical case with ID #{$id} not found.",
+                'data' => null,
             ], 404);
         }
 
         $response = Gate::inspect('delete', $case);
         if ($response->denied()) {
             return response()->json([
-                'status' => 'error',
+                'success' => false,
                 'message' => 'This action is unauthorized.',
                 'error' => $response->message(),
             ], 403);
@@ -162,8 +167,9 @@ class ApiCaseController extends Controller
         $case->delete();
 
         return response()->json([
-            'status' => 'success',
+            'success' => true,
             'message' => "Medical case #{$caseNumber} deleted successfully.",
+            'data' => null,
         ], 200);
     }
 }
