@@ -1,0 +1,6 @@
+{
+  "name": "Jajal Medical Case Management System",
+  "description": "A robust, beginner-friendly medical case management web application built with Laravel 12, MySQL, Blade, and Sanctum API authentication, featuring role-based access for Admins and Viewers.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
